@@ -1,0 +1,131 @@
+---
+title: "Statistical Paradoxes in Medicine I: The False Positive Paradox"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+set.seed(27182) # setting a seed means we can always reproduce the same result from our simulation - we can delete this if we want to get a different random result every time 
+```
+[.Rmd file for this article](https://medical-maths.github.io/statistical-paradoxes-in-medicine-i-the-false-positive-paradox.Rmd)
+
+I thought I would use my first few posts on this site to explore some interesting [veridical](https://en.wikipedia.org/wiki/Paradox#Quine's_classification) paradoxes in medical statistics, starting with an example of the 'false positve paradox'. 
+
+We know that the prevalence of chronic Hepatitis B infection in the UK is around 0.3%[^1] - it affects around 3 in 1000 people. Now suppose we pick 1000 people at random from the UK population and screen them for chronic Hepatitis B with a  blood test that is 99% accurate - that is, if they do have the disease then 99 times out of 100 the blood test will give a positive result and if they don't then 99 times out of 100 it will give a negative result. In most diagnostic tests these probabilities are different - we call the probability of a test giving a positive result if someone has the disease it is testing for the test's sensitivity and the probability of it giving a negative result if they don't it's specificity - but for the sake of simplicity we'll assume our blood test has an equal sensitivity and specificity. 
+
+Imagine that one of the participants of our screening programme is waiting for the results of their blood test and wondering: 'If I get a positive test result, what are the chances that it's a false positive and I actually don't have chronic Hepatitis B?'
+
+A lot of people, myself included, initially guess that the answer to their question is 1%, since the test is 99% accurate. But is this assumption correct? We can test out our intuition using a simulation in R.
+
+The population of the UK is around 68 million[^2], so we can imagine that each person is assigned a number from 1 to 68,000,000, and randomly pick 0.3% of these numbers to designate the people that have chronic Hepatitis B. 
+```{r}
+# First we set up some variables:
+UK_pop_size <- 68000000
+chron_hep_b_prevalence <- 0.003
+chron_hep_b_pop_size <- UK_pop_size * chron_hep_b_prevalence # we calculate 0.3% of the UK population to find the number of people that have chronic Hepatitis B
+print(chron_hep_b_pop_size)
+# Now we randomly pick 204,000 numbers from 1 to 68,000,000:
+UK_pop <- 1:UK_pop_size # we create a vector made up of the numbers from 1 to 68,000,000
+chron_hep_b_pop <- sample(UK_pop, size=chron_hep_b_pop_size, replace=FALSE) # we randomly samples 204,000 entries from our UK_pop vector
+head(chron_hep_b_pop, n=10) # we print the first 10 entries of chron_hep_b_pop to check it looks as we expect
+# Let's create a logical vector (one that only contains TRUE and FALSE values) to represent the chronic Hepatitis B status of every member of the UK population:
+chron_hep_b_statuses <- rep(FALSE, times=UK_pop_size) # we initialise a vector the length of the UK population where every entry is FALSE
+chron_hep_b_statuses[chron_hep_b_pop] <- TRUE # we change the entries corresponding to the people with chronic Hepatitis B to TRUE
+```
+Now we can perform our simualtion by choosing a random 1000 people out of the UK population and giving them an accurate test result with a probability of 99% and an incorrect test result with a probability of 1%.
+```{r}
+# First we randomly pick 1000 numbers from 1 to 68,000,000 to choose the people in our sample:
+sample_size <- 1000
+random_sample <- sample(UK_pop, size=sample_size, replace=FALSE)
+# Before we begin to simulate test results we initialise variables to store the number of correct and incorrect test results:
+number_accurate_results <- 0
+number_inaccurate_results <- 0
+number_true_positives <- 0
+number_true_negatives <- 0
+number_false_positives <- 0
+number_false_negatives <- 0
+# Now we can run a simulation: 
+for (i in 1:sample_size) { # we set up a for loop to run through every person in our sample group
+  true_chron_hep_b_status <- chron_hep_b_statuses[random_sample[i]] # for each person we first the logical vector we created above to find out if they do or don't have chronic Hepatitis B
+  # To give them a correct test result with a probability of 99% we can randomly generate a real number between 0 and 1 and give them an accurate result if it is less than or equal to 0.99:
+  random_number <- runif(1, min=0, max=1) # we sample from the continuous uniform distrubution U(0,1)
+  if (random_number <= 0.99){
+    number_accurate_results <- number_accurate_results + 1
+    if (true_chron_hep_b_status == TRUE) { # if the person does have chronic Hepatitis B they get an accurate positive result
+      number_true_positives <- number_true_positives + 1
+    } else { # and if they don't they get an accurate negative result
+      number_true_negatives <- number_true_negatives + 1
+    }
+  } else { # if the number we randomly generated is greater than 0.99 they will get an incorrect test result
+    number_inaccurate_results <- number_inaccurate_results + 1
+    if (true_chron_hep_b_status == TRUE) { # if the person does have chronic Hepatitis B they get a wrongly negative result
+      number_false_negatives <- number_false_negatives + 1
+    } else { # and if they don't they get a wrongly positive result
+      number_false_positives <- number_false_positives + 1
+    }
+  }
+}
+# Let's correct and print our results in a vector to make them easy to interpret:
+results_vector <- c("Number of Accurate Results:" = number_accurate_results, "Number of Inaccuate Results:" = number_inaccurate_results,
+                    "Number of True Positives:" = number_true_positives, "Number of True Negatives:" = number_true_negatives,
+                    "Number of False Positives:" = number_false_positives, "Number of False Negatives:" = number_false_negatives)
+print(results_vector)
+```
+We can use our results to find the probability that someone in our simulation who receives a positive result does not in fact have chronic Hepatitis B.
+```{r}
+number_false_positives / (number_false_positives + number_true_positives)
+```
+So anyone in our simulation who tested positive for chronic Hepatitis B has around a 78% chance that it was a false positive and they don't actually have the disease, going against the 1% probability we expected from the test's 99% accuracy. 
+
+Now, we of course only used one random sample of 1000 people out of 68,000,000, and there was also chance governing whether each person's test was accurate or not, so did the randomness involved mean that we happened to simulate an anomalous event that had a very small probability of occurring? We can find out by running many more simulations - for example generating ten thousand different random samples of 1000 people, performing the same experiment for all of them, and recording the probability that a positive test result is false for each simulation.
+```{r}
+# First we initialise a vector to store the probabilities we get from each simulation:
+num_sims <- 10000
+false_pos_probs <- rep(NA, times=num_sims)
+# Now we can use similar code as in our original simulation, but this time nested inside a for loop so it runs 10,000 times:
+for (n in 1:num_sims) {
+  samp_size <- 1000
+  rand_samp <- sample(UK_pop, size=sample_size, replace=FALSE)
+  # For these simulations we're only interested in positive test results, so we don't need to store true and false negatives:
+  num_true_pos <- 0
+  num_false_pos <- 0
+  for (i in 1:samp_size) {
+    true_stat <- chron_hep_b_statuses[rand_samp[i]]
+    rand_num <- runif(1, min=0, max=1) 
+    # We can use 'if and' statements instead of nested if statements for brevity:
+    if (rand_num <= 0.99 & true_stat == TRUE) { 
+      num_true_pos <- num_true_pos + 1
+    } else if (rand_num > 0.99 & true_stat == FALSE) {
+      num_false_pos <- num_false_pos + 1
+    }
+  }
+  prob_pos_false <- num_false_pos / (num_false_pos + num_true_pos)
+  false_pos_probs[n] <- prob_pos_false
+}
+# Let's see what the first 10 probabilities we found in our ten thousand simulations were:
+head(false_pos_probs, n=10)
+# We can also find the average of all of our simulations: 
+mean(false_pos_probs)
+```
+So over ten thousand simulations, the average probability of someone not having chronic Hepatitis B if they received a positive test result was about 77% - it seems like our first simulation wasn't an outlier! 
+
+How can we explain this result? One way is to use conditional probabilities and [Bayes' Theorem](https://en.wikipedia.org/wiki/Bayes%27_theorem), which states that for any two events $A$ and $B$, the probability, $P(A|B)$, of $A$ happening given that $B$ has occured is given by the formula $$P(A|B)=\frac{P(B|A)P(A)}{P(B)},$$ where $P(A)$ and $P(B)$ are the probabilities of $A$ and $B$ occuring, and $P(B|A)$ is the probability of $B$ taking place given that $A$ happens.
+
+In the case of diagnostic testing we can let $D$ be the event that someone has a specific disease, $D^{\prime}$ be the event that they do not, and $p$ be the event that they test positive. Then to calculate the probability that they do not have the disease given that they have a positive test, we need to find $$P(D^{\prime}|p)=\frac{P(p|D^{\prime})P(D^{\prime})}{P(p)}.$$ In the case of our example from above, we know that $P(D^{\prime})=0.997$, equivalent to 99.7%, since the prevalence of chronic Hepatitis B in the UK is 0.03%. We also know $P(p|D^{\prime})$; it is $0.01$, as we defined our imaginary test to be 99% accurate. So to find the probability of a positive test result being false we just need to find the denominator of the fraction above; $P(p)$, the overall probability of testing positive.
+
+We can write $$P(p)=P(p\cap(D\cup D^{\prime}))=P(p\cap D)+P(p\cap D^{\prime})=P(p|D)p(D)+P(p|D^{\prime})P(D^{\prime}),$$ using the fact that $D$ and $D^{\prime}$ are [collectively exhaustive](https://en.wikipedia.org/wiki/Collectively_exhaustive_events) and [mutually exclusive](https://en.wikipedia.org/wiki/Mutual_exclusivity) events, as well as [the definition of conditional probability](https://en.wikipedia.org/wiki/Conditional_probability), which we can rearrange to get that $P(A\cap B)=P(A|B)P(B)$. To work out $P(p)$ for our example we just substitute in the values $P(p|D)=0.99$, $P(D)=0.003$, $P(p|D^{\prime})=0.01$, and $P(D^{\prime})=0.997$, to find that $$P(p)=0.99\times0.003+0.01\times0.997=0.01294.$$
+
+Finally, we can find $$P(D^{\prime}|p)=\frac{0.01 × 0.997}{0.01294}=0.7704791345,$$ which is pretty close to the value we got from repeated simulations!
+
+This unintuitive result is an example of the **false positive paradox**, which describes situations in which a positive test result is more likely to be false than true, due to a low proportion of people in the population being screened having the characteristic being tested for. When presented with statistics about the accuracy of a diagnostic test for a disease, it is easy to ignore the prevalence of the condition in the population and confuse the conditional probability of someone testing positive given that they have don't the disease, $P(p|D^{\prime})$ (1% for our imaginary test), with the conditional probability of someone not having the disease given that they have tested positive, $P(D^{\prime}|p)$ (around 77% in our example).
+
+While we can use Bayes' Theorem to calculate the exact probability $P(D^{\prime}|p)$ for any given disease and test, it is often easier to imagine what would happen if we tested a real group of people, as [Gerd Gigerenzer](https://www.mpib-berlin.mpg.de/staff/gerd-gigerenzer) suggests in his excellent book [Reckoning with Risk](https://www.penguin.co.uk/books/26623/reckoning-with-risk-by-gerd-gigerenzer/9780140297867). For instance, to help us understand our example we could imagine that a 99% accurate test for chronic Hepatitis B is applied to representative group of one thousand people from the UK population, in which three have chronic Hepatitis B. Of the people that have the disease, 99%, equalling 2.97 people, will test positive, which we can round up to three. But 1% of the 997 people who don't have chronic Hepatitis B will also test positive, giving us 9.97 false positives, which we can round up to ten. So ten out of thirteen positive test results in this group are false, which is about 76.9% - quite a good estimate of $P(D^{\prime}|p)$! And if we pretend that 0.97 of a person can exist then we will recover the exact value given by Bayes' theorem, without having to use the formula.
+
+![](https://medical-maths.github.io/the-false-positive-paradox.png)
+
+So that is the false positive paradox! I hope you found it interesting and/or useful - if you want to read more about some of the pitfalls that it is possible to fall into when interpreting probabilities in medical (and other) settings I definitely recommend reading Reckoning with Risk by Gerd Gigerenzer. Thank you for reading! 😊
+
+[^1]: National Institute for Health and Care Excellence. [*Hepatitis B: How common is it?*](https://cks.nice.org.uk/topics/hepatitis-b/background-information/prevalence/) 2024.
+[^2]: Office for National Statistics. [*Population estimates for the UK, England, Wales, Scotland, and Northern Ireland: mid-2022.*](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2022) 2024. 
