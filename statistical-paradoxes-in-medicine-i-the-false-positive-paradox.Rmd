@@ -11,7 +11,7 @@ set.seed(27182) # setting a seed means we can always reproduce the same result f
 ```
 [.Rmd file for this article](https://medical-maths.github.io/statistical-paradoxes-in-medicine-i-the-false-positive-paradox.Rmd)
 
-I thought I would use my first few posts on this site to explore some interesting [veridical](https://en.wikipedia.org/wiki/Paradox#Quine's_classification) paradoxes in medical statistics, starting with an example of the 'false positve paradox'. 
+I thought I would use my first few posts on this site to explore some interesting [veridical](https://en.wikipedia.org/wiki/Paradox#Quine's_classification) paradoxes in medical statistics, starting with an example of the 'false positive paradox'. 
 
 We know that the prevalence of chronic Hepatitis B infection in the UK is around 0.3%[^1] - it affects around 3 in 1000 people. Now suppose we pick 1000 people at random from the UK population and screen them for chronic Hepatitis B with a  blood test that is 99% accurate - that is, if they do have the disease then 99 times out of 100 the blood test will give a positive result and if they don't then 99 times out of 100 it will give a negative result. In most diagnostic tests these probabilities are different - we call the probability of a test giving a positive result if someone has the disease it is testing for the test's sensitivity and the probability of it giving a negative result if they don't it's specificity - but for the sake of simplicity we'll assume our blood test has an equal sensitivity and specificity. 
 
@@ -125,7 +125,7 @@ While we can use Bayes' Theorem to calculate the exact probability $P(D^{\prime}
 
 ![](https://medical-maths.github.io/the-false-positive-paradox.png)
 
-So that is the false positive paradox! I hope you found it interesting and/or useful - if you want to read more about some of the pitfalls that it is possible to fall into when interpreting probabilities in medical (and other) settings I definitely recommend reading Reckoning with Risk by Gerd Gigerenzer. Thank you for reading! 😊
+So that is the false positive paradox! I hope you found this explanation interesting and/or useful - if you want to learn more about some of the pitfalls that it is possible to fall into when interpreting probabilities in medical (and other) settings I definitely recommend Reckoning with Risk by Gerd Gigerenzer. Thank you for reading! 😊
 
 [^1]: National Institute for Health and Care Excellence. [*Hepatitis B: How common is it?*](https://cks.nice.org.uk/topics/hepatitis-b/background-information/prevalence/) 2024.
 [^2]: Office for National Statistics. [*Population estimates for the UK, England, Wales, Scotland, and Northern Ireland: mid-2022.*](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2022) 2024. 
