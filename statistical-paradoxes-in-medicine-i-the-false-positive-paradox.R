@@ -1,5 +1,5 @@
 # Statistical Paradoxes in Medicine I: The False Positive Paradox
-set.seed(27182) # setting a seed means we can always reproduce the same results from our simulations - we can delete this if we want to get a different random result every time 
+set.seed(27182) # setting a seed means we can always reproduce the same results from our simulations – we can delete this if we want to get a different random result every time 
 
 # 1. Simulating the UK Population
 # First we set up some variables:
