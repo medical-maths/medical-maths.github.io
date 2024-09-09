@@ -145,7 +145,7 @@ maximum_matching <- function(adj_mat, match_vec) {
     if (aug_path_length == 1) {
       current_matching <- rbind(current_matching, aug_path)
       current_matching_length <- nrow(current_matching)
-      current_match_vec <- rep(0,6)
+      current_match_vec <- rep(0,num_vertices)
       for (i in 1:current_matching_length) {
         current_match_vec[current_matching[i,1]] <- current_matching[i,2]
         current_match_vec[current_matching[i,2]] <- current_matching[i,1]
@@ -160,7 +160,7 @@ maximum_matching <- function(adj_mat, match_vec) {
         current_matching <- current_matching[!(current_matching[,1]==aug_path[i,1] & current_matching[,2]==aug_path[i,2]),]
       }
     }
-    current_match_vec <- rep(0,6)
+    current_match_vec <- rep(0,num_vertices)
     current_matching_length <- nrow(current_matching)
     for (i in 1:current_matching_length) {
       current_match_vec[current_matching[i,1]] <- current_matching[i,2]
