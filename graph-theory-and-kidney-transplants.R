@@ -136,14 +136,17 @@ maximum_matching <- function(adj_mat, match_vec) {
   # Now we will run our augmenting path algorithm and and use it to increase our current matching until no more augmenting paths can be found:
   current_match_vec <- match_vec
   repeat {
-    aug_path <- augmenting_path(adj_list, current_match_vec)
+    aug_path <- augmenting_path(adj_list, current_match_vec) # we find an augmenting path for the input graph and the current matching 
     aug_path_length <- nrow(aug_path)
+    # If the augmenting_path function has not found any augmenting paths, we break out of the repeat loop:
     if (aug_path_length == 0) {
-      break
+      break 
     }
     aug_path <- t(apply(aug_path, 1, sort)) # we order the edges in the augmenting path with the lower indexed vertex first
-    if (aug_path_length == 1) {
-      current_matching <- rbind(current_matching, aug_path)
+    # If the augmenting path consists of only one edge, we add that edge to our matching and run another iteration of the augmenting_path function with the new matching:
+    if (aug_path_length == 1) { 
+      current_matching <- rbind(current_matching, aug_path) 
+      # Before running the augmenting_path function again we need to update the current_match_vec algorithm to reflect our new matching:
       current_matching_length <- nrow(current_matching)
       current_match_vec <- rep(0,num_vertices)
       for (i in 1:current_matching_length) {
@@ -152,22 +155,25 @@ maximum_matching <- function(adj_mat, match_vec) {
       }
       next
     }
+    # If the augmenting path has more than one edge, we add the edges that are not included in the current matching, and remove the ones that are 
+    # (by the definition of an augmenting path, these alternate):
     for (i in 1:aug_path_length) {
-      if (i%%2 == 1) {
+      if (i%%2 == 1) { 
         current_matching <- rbind(current_matching, aug_path[i,])
       }
       if (i%%2 == 0) {
         current_matching <- current_matching[!(current_matching[,1]==aug_path[i,1] & current_matching[,2]==aug_path[i,2]),]
       }
     }
-    current_match_vec <- rep(0,num_vertices)
+    # Before running the augmenting_path function again we need to update the current_match_vec algorithm to reflect our new matching:
     current_matching_length <- nrow(current_matching)
+    current_match_vec <- rep(0,num_vertices)
     for (i in 1:current_matching_length) {
       current_match_vec[current_matching[i,1]] <- current_matching[i,2]
       current_match_vec[current_matching[i,2]] <- current_matching[i,1]
     }
   }
-  return(current_matching)
+  return(current_matching) # we return the first matching we arrived at for which no augmenting paths could be found
 }
 S_empty_matching <- rep(0,6)
 S_max_matching <- maximum_matching(S_adj_mat, S_empty_matching)
