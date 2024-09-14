@@ -29,7 +29,9 @@ number_false_negatives <- 0
 # Now we can run a simulation: 
 for (i in 1:sample_size) { # we set up a for loop to run through every person in our sample group
   true_chron_hep_b_status <- chron_hep_b_statuses[random_sample[i]] # for each person we first the logical vector we created above to find out if they do or don't have chronic Hepatitis B
-  # To give them a correct test result with a probability of 99% we can randomly generate a real number between 0 and 1 and give them an accurate result if it is less than or equal to 0.99:
+  # To give them a correct test result with a probability of 99% 
+  # we can randomly generate a real number between 0 and 1 
+  # and give them an accurate result if it is less than or equal to 0.99:
   random_number <- runif(1, min=0, max=1) # we sample from the continuous uniform distrubution U(0,1)
   if (random_number <= 0.99){
     number_accurate_results <- number_accurate_results + 1
@@ -78,7 +80,9 @@ for (n in 1:num_sims) {
   prob_pos_false <- num_false_pos / (num_false_pos + num_true_pos)
   false_pos_probs[n] <- prob_pos_false
 }
-# Let's see what the first 10 probabilities we found in our ten thousand simulations were:
+
+# 4. Seeing what the first 10 probabilities we found in our ten thousand simulations were:
 head(false_pos_probs, n=10)
-# We can also find the average of all of our simulations: 
+
+# 5. Finding the average of all of our simulations: 
 mean(false_pos_probs)
